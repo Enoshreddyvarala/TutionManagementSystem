@@ -104,7 +104,7 @@ export const NAV_ITEMS = [
   { href: '/dashboard/reports', label: 'Reports', icon: 'BarChart3', permissions: ['report_view'] as PermissionCode[] },
   { href: '/dashboard/users', label: 'Users', icon: 'UserCog', permissions: ['user_manage'] as PermissionCode[] },
   { href: '/dashboard/audit', label: 'Audit Logs', icon: 'ScrollText', permissions: ['audit_view'] as PermissionCode[] },
-  { href: '/dashboard/settings', label: 'Settings', icon: 'Settings', permissions: ['settings_manage'] as PermissionCode[] },
+  { href: '/dashboard/settings', label: 'Settings', icon: 'Settings', permissions: [] as PermissionCode[] },
 ];
 
 export function getNavItemsForRole(
