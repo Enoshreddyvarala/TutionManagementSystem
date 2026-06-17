@@ -4,16 +4,21 @@ import { hasPermission } from '@/lib/permissions';
 
 export async function getCurrentUser(): Promise<User | null> {
   const supabase = await createClient();
-  const { data: { user: authUser } } = await supabase.auth.getUser();
-  if (!authUser) return null;
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+  if (authError || !authUser) return null;
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('users')
     .select('*')
     .eq('id', authUser.id)
     .single();
 
-  return profile as User | null;
+  if (profileError) {
+    console.error('Failed to load user profile:', profileError.message, 'auth id:', authUser.id);
+    return null;
+  }
+
+  return profile as User;
 }
 
 export async function getUserPermissions(userId: string): Promise<{ code: PermissionCode; granted: boolean }[]> {
@@ -40,7 +45,9 @@ export async function requirePermission(permission: PermissionCode): Promise<Use
   const user = await requireAuth();
   const customPerms = await getUserPermissions(user.id);
   if (!hasPermission(user.role, permission, customPerms)) {
-    throw new Error('Forbidden');
+    throw new Error(
+      `Forbidden: your role (${user.role}) does not have the "${permission}" permission. Contact a Super Admin to update your role.`
+    );
   }
   return user;
 }
