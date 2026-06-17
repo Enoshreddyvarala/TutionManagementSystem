@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatCurrency } from '@/lib/utils';
 import { ROLE_LABELS } from '@/lib/permissions';
+import { EditNameForm } from '@/components/modules/edit-name-form';
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -19,9 +20,9 @@ export default async function SettingsPage() {
           <Card>
             <CardHeader><CardTitle>My Account</CardTitle></CardHeader>
             <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center py-0.5">
                 <span className="text-muted-foreground">Name</span>
-                <span className="font-medium">{user.name}</span>
+                <EditNameForm initialName={user.name} />
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Email</span>
