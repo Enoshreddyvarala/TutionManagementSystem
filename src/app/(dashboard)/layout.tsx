@@ -3,6 +3,9 @@ import { getCurrentUser, getUserPermissions } from '@/lib/auth';
 import { UserProvider } from '@/components/providers';
 import { Sidebar, Header } from '@/components/layout/sidebar';
 
+// Always read fresh role from database (avoid stale cached layout)
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
