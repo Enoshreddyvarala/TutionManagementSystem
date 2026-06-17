@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient } from '@/lib/supabase/server';
-import { requirePermission, logAudit } from '@/lib/auth';
+import { requirePermission, logAudit, requireAuth } from '@/lib/auth';
 import { userSchema } from '@/lib/validations';
 
 export async function GET() {
@@ -58,3 +58,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: (e as Error).message }, { status: 403 });
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const currentUser = await requireAuth();
+    const body = await request.json();
+    const { name } = body;
+    if (!name || name.trim().length < 2) {
+      return NextResponse.json({ error: 'Name must be at least 2 characters' }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ name: name.trim() })
+      .eq('id', currentUser.id);
+
+    if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+
+    const { error: authUpdateError } = await supabase.auth.updateUser({
+      data: { name: name.trim() },
+    });
+
+    if (authUpdateError) {
+      console.error('Failed to update auth metadata:', authUpdateError.message);
+    }
+
+    await logAudit('user_updated_profile', 'users', currentUser.id, { name: name.trim() });
+    return NextResponse.json({ success: true, name: name.trim() });
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 403 });
+  }
+}
+
